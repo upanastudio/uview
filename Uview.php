@@ -3,12 +3,12 @@ defined('BASEPATH') or exit('No direct script access allowed');
 
 class Uview
 {
-    private $_defaultIndex = 'lihat';
-
-    private $_viewName = null;
+    private $_default_index = 'lihat';
+    private $_parser = false;
+    private $_view_name = null;
     private $_breadcumb = null;
-    private $_jsPath = null;
-    private $_cssPath = null;
+    private $_js_path = null;
+    private $_css_path = null;
 
     // set Instansce Null Object CI
     public $CI = null;
@@ -50,17 +50,17 @@ class Uview
      * @return void
      */
 
-    public function builder(array $data_view, $title, $path_layout = '')
+    public function builder(array $data_view, $title, $path_layout = '', $is_parser = FALSE)
     {
         $trace = debug_backtrace();
         $caller_function = strtolower($trace[1]['function']);
         if ($caller_function == 'index') {
-            $caller_function = $this->_defaultIndex;
+            $caller_function = $this->_default_index;
         }
 
         //set_view name file path
-        if ($this->_viewName)
-            $caller_function = $this->_viewName;
+        if ($this->_view_name)
+            $caller_function = $this->_view_name;
 
         $caller_class = strtolower($trace[1]['class']);
 
@@ -84,14 +84,14 @@ class Uview
             $data['breadcumb'] = ucwords($title . ' - ' . $caller_function);
         
         //set_js
-        if($this->_jsPath)
-            $js_path = $path_layout . $caller_class . '/' . 'js' . '/' . $this->_jsPath;
+        if($this->_js_path)
+            $js_path = $path_layout . $caller_class . '/' . 'js' . '/' . $this->_js_path;
         else
             $js_path = $path_layout . $caller_class . '/' . 'js' . '/' . $caller_function;
 
         //set_css
-        if ($this->_cssPath)
-            $css_path = $path_layout . $caller_class . '/' . 'css' . '/' . $this->_cssPath;
+        if ($this->_css_path)
+            $css_path = $path_layout . $caller_class . '/' . 'css' . '/' . $this->_css_path;
         else
             $css_path = $path_layout . $caller_class . '/' . 'css' . '/' . $caller_function;
         
@@ -102,12 +102,14 @@ class Uview
         $data['js'] = $this->_is_file_exist($js_path) ? $js_path : '';
         $data['css'] = $this->_is_file_exist($css_path) ? $css_path : '';
 
-        $this->_generate($path_layout, $data);
+        
+
+        $this->_generate($path_layout, $data, $is_parser);
 
     }
 
     public function set_filename($view_name){
-        $this->_viewName = $view_name;
+        $this->_view_name = $view_name;
         return $this;
     }
 
@@ -116,19 +118,25 @@ class Uview
         return $this;
     }
 
-    public function set_js_path($jspath){
-        $this->_jsPath = $jspath;
+    public function set_js_path($js_path){
+        $this->_js_path = $js_path;
         return $this;
     }
 
-    public function set_css_path($csspath){
-        $this->_cssPath = $csspath;
+    public function set_css_path($css_path){
+        $this->_css_path = $css_path;
         return $this;
     }
 
-    private function _generate($path_layout, $data)
+    private function _generate($path_layout, $data, $is_parser)
     {
-        $this->CI->load->view($path_layout . '_layout/wrapper', $data);
+        if($is_parser === FALSE)
+            $this->CI->load->view($path_layout . '_layout/wrapper', $data);
+        else{
+            $this->CI->load->library('parser');
+            $this->CI->parser->parse($path_layout . '_layout/wrapper', $data);
+        }
+
 
     }
 
