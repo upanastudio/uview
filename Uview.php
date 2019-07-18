@@ -9,6 +9,8 @@ class Uview
     private $_breadcumb = null;
     private $_js_path = null;
     private $_css_path = null;
+    private $_breadcumb_default_class = "";
+    private $_breadcumb_separator = '-'; // bisa diinput html
 
     // set Instansce Null Object CI
     public $CI = null;
@@ -78,10 +80,32 @@ class Uview
         $data['title'] = ucwords($title);
 
         //set_breadcumbs
-        if ($this->_breadcumb)
-            $data['breadcumb'] = ucwords($this->_breadcumb);
-        else
-            $data['breadcumb'] = ucwords($title . ' - ' . $caller_function);
+        if ($this->_breadcumb){
+
+            if (is_array($this->_breadcumb)) {
+                
+                foreach ($this->_breadcumb as $key => $value) {
+                    $this->_breadcumb[$key] = anchor( strtolower($path_layout . $value), ucwords($key), array('class' => $this->_breadcumb_default_class));
+                }
+                $data['breadcumb'] = $trace[1]['class'] . " &nbsp; {$this->_breadcumb_separator} &nbsp; " . implode(" &nbsp; {$this->_breadcumb_separator} &nbsp; " ,$this->_breadcumb);
+
+            } else {
+                // $data['breadcumb'] = ucwords($this->_breadcumb);
+                $data['breadcumb'] =  $trace[1]['class'] . " &nbsp; {$this->_breadcumb_separator} &nbsp; " . anchor(current_url().'/#', ucwords($this->_breadcumb), array('class' => $this->_breadcumb_default_class));
+            }
+
+        } else {
+            $args = '';
+            if(! empty($trace[1]['args'])) {
+                
+                foreach($trace[1]['args'] as $key => $value){
+                    $trace[1]['args'][$key] = anchor(current_url().'/#', $value, array('class' => $this->_breadcumb_default_class));
+                }
+                $args = " &nbsp; {$this->_breadcumb_separator} &nbsp; " . implode(" &nbsp; {$this->_breadcumb_separator} &nbsp; " ,$trace[1]['args']);
+            }
+
+            $data['breadcumb'] = anchor(strtolower($path_layout . $trace[1]['class']), ucwords($title), array('class' => $this->_breadcumb_default_class)) . "&nbsp; {$this->_breadcumb_separator} &nbsp; " . anchor( strtolower($path_layout . $trace[1]['class'] . "/{$caller_function}"), ucwords($caller_function), array('class' => $this->_breadcumb_default_class)) . $args;
+        }
         
         //set_js
         if($this->_js_path)
