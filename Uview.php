@@ -1,6 +1,13 @@
 <?php
 defined('BASEPATH') or exit('No direct script access allowed');
 
+/**
+ * Uview class
+ * @author arhen <official.rahmatslamet@gmail.com>
+ * @version 1.0.0
+ * @copyright 2019 Arhen
+ * @license MIT
+ */
 class Uview
 {
     private $_default_index = 'lihat';
@@ -11,6 +18,7 @@ class Uview
     private $_css_path = null;
     private $_breadcumb_default_class = "";
     private $_breadcumb_separator = '-'; // bisa diinput html
+    private $_layout_path = '_layout'; //default is _layout
 
     // set Instansce Null Object CI
     public $CI = null;
@@ -76,14 +84,14 @@ class Uview
                 $data[$key] = $value;
             }
         }
-        
+
         $data['title'] = ucwords($title);
 
         //set_breadcumbs
         if ($this->_breadcumb){
 
             if (is_array($this->_breadcumb)) {
-                
+
                 foreach ($this->_breadcumb as $key => $value) {
                     $this->_breadcumb[$key] = anchor( strtolower($path_layout . $value), ucwords($key), array('class' => $this->_breadcumb_default_class));
                 }
@@ -97,7 +105,7 @@ class Uview
         } else {
             $args = '';
             if(! empty($trace[1]['args'])) {
-                
+
                 foreach($trace[1]['args'] as $key => $value){
                     $trace[1]['args'][$key] = anchor(current_url().'/#', $value, array('class' => $this->_breadcumb_default_class));
                 }
@@ -106,7 +114,7 @@ class Uview
 
             $data['breadcumb'] = anchor(strtolower($path_layout . $trace[1]['class']), ucwords($title), array('class' => $this->_breadcumb_default_class)) . "&nbsp; {$this->_breadcumb_separator} &nbsp; " . anchor( strtolower($path_layout . $trace[1]['class'] . "/{$caller_function}"), ucwords($caller_function), array('class' => $this->_breadcumb_default_class)) . $args;
         }
-        
+
         //set_js
         if($this->_js_path)
             $js_path = $path_layout . $caller_class . '/' . 'js' . '/' . $this->_js_path;
@@ -118,7 +126,7 @@ class Uview
             $css_path = $path_layout . $caller_class . '/' . 'css' . '/' . $this->_css_path;
         else
             $css_path = $path_layout . $caller_class . '/' . 'css' . '/' . $caller_function;
-        
+
 
 
         $data['isi'] = $path_layout . $caller_class . '/' . $caller_function;
@@ -126,7 +134,7 @@ class Uview
         $data['js'] = $this->_is_file_exist($js_path) ? $js_path : '';
         $data['css'] = $this->_is_file_exist($css_path) ? $css_path : '';
 
-        
+
 
         $this->_generate($path_layout, $data, $is_parser);
 
@@ -152,13 +160,22 @@ class Uview
         return $this;
     }
 
+    public function set_layout($layout_path){
+        $this->_layout_path = $layout_path;
+        return $this;
+    }
+
     private function _generate($path_layout, $data, $is_parser)
     {
+        $wrapper_path = $path_layout . $this->_layout_path .'/wrapper';
+        if(! file_exists(APPPATH . 'view'. $wrapper_path . '.php')){
+            throw new Exception("There no wrapper file!. uview need it!. make sure you locate ur layout correctly!", 1);
+        }
         if($is_parser === FALSE)
-            $this->CI->load->view($path_layout . '_layout/wrapper', $data);
+            $this->CI->load->view($wrapper_path, $data);
         else{
             $this->CI->load->library('parser');
-            $this->CI->parser->parse($path_layout . '_layout/wrapper', $data);
+            $this->CI->parser->parse($wrapper_path, $data);
         }
 
 
