@@ -168,9 +168,6 @@ class Uview
     private function _generate($path_layout, $data, $is_parser)
     {
         $wrapper_path = $path_layout . $this->_layout_path .'/wrapper';
-        if(! file_exists(APPPATH . 'view'. $wrapper_path . '.php')){
-            throw new Exception("There no wrapper file!. uview need it!. make sure you locate ur layout correctly!", 1);
-        }
         if($is_parser === FALSE)
             $this->CI->load->view($wrapper_path, $data);
         else{
